@@ -1,7 +1,7 @@
 package Streaming;
 
 public class FolderPattern {
-	private static final String layer4 = "./Clients";
+	private static final String layer4 = "./Result";
 	private static final String layer3 = layer4 + "/" + Startup.hostId;
 	private static final String layer2 = layer3 + "/chunk";
 	private static final String layer1 = layer2 + "/2";

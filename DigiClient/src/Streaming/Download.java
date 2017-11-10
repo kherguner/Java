@@ -8,13 +8,12 @@ import java.net.URL;
 
 public class Download {
 	String url = "";
+	long startReqTime, bitrate, contentByte;
+	double finishReqTime;
 
-	public Download(String url) throws IOException {
+	public void httpGet(String url) throws IOException, InterruptedException {
+		startReqTime = System.currentTimeMillis();
 		this.url = url;
-		httpGet();
-	}
-
-	public void httpGet() throws IOException {
 		int bytesRead = -1;
 		byte[] buffer = new byte[4096];
 		URL obj = new URL(this.url);
@@ -26,6 +25,7 @@ public class Download {
 			String fileName = "";
 			String disposition = httpConn.getHeaderField("Content-Disposition");
 			int contentLength = httpConn.getContentLength();
+			contentByte = contentLength;
 
 			if (disposition != null) {
 				int index = disposition.indexOf("filename=");
@@ -42,11 +42,19 @@ public class Download {
 			while ((bytesRead = inputStream.read(buffer)) != -1) {
 				outputStream.write(buffer, 0, bytesRead);
 			}
-
+			finishReqTime = (System.currentTimeMillis() - startReqTime) / 1000.0;
+			long byteToKbps = (long) ((contentLength * 8) / 1000);
+			bitrate = (long) (byteToKbps / finishReqTime);
 			outputStream.close();
 			inputStream.close();
 		} else {
 			System.out.println("No file to download. Server replied HTTP code: " + responseCode);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "Download info : [ video total byte=" + contentByte + ", bitrate=" + bitrate + ", Request finish Time="
+				+ finishReqTime + "]\n";
 	}
 }

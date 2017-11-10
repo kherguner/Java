@@ -1,30 +1,32 @@
 package Streaming;
 
 public interface Buffer {
-	public void setDownloadSeconds(int value);
+	public void setDownloadChunk(int value) throws InterruptedException;
 
-	public int getDownloadSeconds();
+	public int getDownloadChunk() throws InterruptedException;
 
-	public void setPlayoutSeconds(int value);
+	public void setPlayoutSeconds(int value) throws InterruptedException;
 
-	public int getPlayoutSeconds();
+	public int getPlayoutSeconds() throws InterruptedException;
 
-	public void setBuffer(int value);
+	public int getBuffer() throws InterruptedException;
 
-	public int getBuffer(int value);
+	public void setBitrate(long bw) throws InterruptedException;
 
-	public void setBitrate(long bw);
+	public long getBitrate() throws InterruptedException;
 
-	public long getBitrate();
+	public void setIsDownload(boolean flag) throws InterruptedException;
+	
+	public boolean getIsDownload() throws InterruptedException;
+	
+	public void setIsPlayer(boolean flag) throws InterruptedException;
+	
+	public boolean getIsPlayer() throws InterruptedException;
 
-	public void setIsDownload(boolean flag);
+	public int getMaxBuffer() throws InterruptedException;
 
-	public boolean getIsDownload();
+	public int getCriticalPosition() throws InterruptedException;
 
-	public int getMaxBuffer();
-
-	public int getCriticalPosition();
-
-	public int getStartup();
+	public int getStartup() throws InterruptedException;
 
 }

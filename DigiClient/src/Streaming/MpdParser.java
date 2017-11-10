@@ -6,18 +6,28 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 public class MpdParser {
 	Scanner read;
 	ArrayList<Integer> bandwith = new ArrayList<>();
 	ArrayList<String> chunkUrl = new ArrayList<>();
-	Map<Integer, ArrayList<String>> content = new HashMap<>();;
+	Map<Integer, ArrayList<String>> content = new HashMap<>();
+	Map<Long, Long> bwList = new HashMap<>();
 	String cdnAddress = "";
-	int chunkSize = 0;
+	static int chunkSize = 0, key = 1;
 
 	public MpdParser() {
 		readProcess();
 		contentGenerate();
+		generateBwList();
+	}
+
+	private void generateBwList() {
+		Set<Integer> keys = this.content.keySet();
+		for (Integer i : keys) {
+			this.bwList.put((long) key++, (long) i);
+		}
 	}
 
 	private void readProcess() {

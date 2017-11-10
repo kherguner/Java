@@ -1,60 +1,107 @@
 package Streaming;
 
+import java.io.PrintWriter;
+import java.util.Date;
+
 public class BufferSynchronized implements Buffer {
+	PrintWriter bufferLog;
+	boolean occupied = false, isDownload = true, isPlay = false;
+	int videoTotalSeconds = MpdParser.chunkSize * 2;
+	int segmentTime, playTime, bw;
 
-	@Override
-	public void setDownloadSeconds(int value) {
-		//producer thread
+	public BufferSynchronized(PrintWriter bufferLog) {
+		this.bufferLog = bufferLog;
 	}
 
 	@Override
-	public int getDownloadSeconds() {
-		//producer thread
-		return 0;
+	public synchronized void setDownloadChunk(int value) throws InterruptedException {
+		// producer thread
+		segmentTime = value * 2;
+
+		if (getBuffer() >= getMaxBuffer()) {
+			occupied = true;
+		}
+
+		while (occupied) {
+			printfile("Buffer full...");
+			System.out.println("Producer waiting");
+			wait();
+		}
+
+		if (getStartup() == getDownloadChunk()) {
+			setIsPlayer(true);
+		}
+
+		if (getDownloadChunk() == videoTotalSeconds) {
+			occupied = true;
+			isDownload = false;
+		}
+
+		this.printfile("Producer:\t" + toString());
+		notifyAll();
 	}
 
 	@Override
-	public void setPlayoutSeconds(int value) {
-		//consumer thread
+	public int getDownloadChunk() {
+		return segmentTime;
+	}
+
+	@Override
+	public synchronized void setPlayoutSeconds(int value) throws InterruptedException {
+		while (!getIsPlayer() ) {
+			printfile("Consumer waitting");
+			System.out.println("Consumer waitting");
+			wait();
+		}
+		playTime = value;
+		if (getBuffer() < getMaxBuffer()) {
+			occupied = false;
+		}
+		if (!isDownload || getBuffer() == 0) {
+			setIsPlayer(false);
+		}
+		this.printfile("Consumer:\t" + toString());
+		notifyAll();
 	}
 
 	@Override
 	public int getPlayoutSeconds() {
-		//consumer thread
-		return 0;
+		return playTime;
 	}
 
 	@Override
-	public void setBuffer(int value) {
-		//SET download video chunk - play video chunk 
+	public void setIsPlayer(boolean flag) throws InterruptedException {
+		isPlay = flag;
 	}
 
 	@Override
-	public int getBuffer(int value) {
-		//GET download video chunk - play video chunk
-		return 0;
+	public boolean getIsPlayer() throws InterruptedException {
+		return isPlay;
 	}
 
 	@Override
-	public void setBitrate(long bw) {
-		//SET latest download segment bandwith
+	public int getBuffer() {
+		return getDownloadChunk() - getPlayoutSeconds();
+	}
+
+	@Override
+	public synchronized void setBitrate(long bw) {
+		this.bw = (int) bw;
 	}
 
 	@Override
 	public long getBitrate() {
-		//GET latest download segment bandwith
-		return 0;
+		return bw;
 	}
 
 	@Override
 	public void setIsDownload(boolean flag) {
-		//buffer station observe
+		isDownload = flag;
 	}
 
 	@Override
 	public boolean getIsDownload() {
-		//buffer station observe
-		return true;
+		return isDownload;
 	}
 
 	@Override
@@ -72,4 +119,14 @@ public class BufferSynchronized implements Buffer {
 		return 8;
 	}
 
+	private synchronized void printfile(String data) {
+		this.bufferLog.println(data);
+		this.bufferLog.flush();
+	}
+
+	@Override
+	public String toString() {
+		return "[Download=" + getDownloadChunk() + ", Playout=" + getPlayoutSeconds() + ", Buffer=" + getBuffer()
+				+ "]	";
+	}
 }
